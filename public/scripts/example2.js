@@ -21,6 +21,24 @@ let CommentBox = React.createClass({
         });
     },
 
+    handleCommentSubmit(comment){
+        
+        // Necessary as of the conflict between .bind(this) in ES6
+        let _this = this;
+        $.ajax({
+          url: this.props.url,
+          dataType: 'json',
+          type: 'POST',
+          data: comment,
+          success(data) {
+            _this.setState({data});
+          },
+          error(xhr, status, err) {
+            console.error(_this.props.url, status, err.toString());
+          }
+        });
+    },
+
     // Method called automatically after the componenet is rendered
     // for the first time.
     componentDidMount(){
@@ -35,7 +53,7 @@ let CommentBox = React.createClass({
             <div className="commentBox">
                 <h1>Comments</h1>
                 <CommentList data={this.state.data} />
-                <CommentForm />
+                <CommentForm onCommentSubmit={this.handleCommentSubmit}/>
             </div>
         );
     }
@@ -72,10 +90,22 @@ let CommentForm = React.createClass({
     handleTextChange(e){
         this.setState({text: e.target.value});
     },
-    
+
+    handleSubmit(e){
+        e.preventDefault();
+        let author = this.state.author.trim();
+        let text = this.state.text.trim();
+        if(!text || !author){
+            return;
+        }
+
+        this.props.onCommentSubmit({author, text});
+        this.setState({author: '', text: ''});
+    },
+
     render(){
         return (
-            <form className="commentForm">
+            <form className="commentForm" onSubmit={this.handleSubmit}>
                 <input
                     type="text"
                     placeholder="Your name"
