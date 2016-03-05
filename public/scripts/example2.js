@@ -6,7 +6,7 @@ let CommentBox = React.createClass({
     },
 
     loadCommentsFromServer(){
-        // Necessary as of the conflict between .bind(this) and ES6
+        // Necessary as of the conflict between .bind(this) in ES6
         let _this = this;
         $.ajax({
             url: this.props.url,
@@ -60,11 +60,36 @@ let CommentList = React.createClass({
 });
 
 let CommentForm = React.createClass({
+
+    getInitialState(){
+        return {author: '', text: ''};
+    },
+
+    handleAuthorChange(e){
+        this.setState({author: e.target.value});
+    },
+
+    handleTextChange(e){
+        this.setState({text: e.target.value});
+    },
+    
     render(){
         return (
-            <div className="commentForm">
-                Hello, im comment form
-            </div>
+            <form className="commentForm">
+                <input
+                    type="text"
+                    placeholder="Your name"
+                    value={this.state.author}
+                    onChange={this.handleAuthorChange}
+                />
+                <input
+                    type="text"
+                    placeholder="Say something..."
+                    value={this.state.text}
+                    onChange={this.handleTextChange}
+                />
+                <input type="submit" value="Post" />
+            </form>
         );
     }
 });
