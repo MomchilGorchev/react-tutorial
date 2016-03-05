@@ -1,9 +1,40 @@
+
 let CommentBox = React.createClass({
+
+    getInitialState(){
+        return {data: []};
+    },
+
+    loadCommentsFromServer(){
+        // Necessary as of the conflict between .bind(this) and ES6
+        let _this = this;
+        $.ajax({
+            url: this.props.url,
+            dataType: 'json',
+            cache: false,
+            success(data){
+                _this.setState({data});
+            },
+            error(xhr, status, err){
+                console.error(_this.props.url, status, err.toString())
+            }
+        });
+    },
+
+    // Method called automatically after the componenet is rendered
+    // for the first time.
+    componentDidMount(){
+
+        this.loadCommentsFromServer();
+        setInterval(this.loadCommentsFromServer(), this.props.pollInterval);
+
+    },
+
     render(){
         return (
             <div className="commentBox">
                 <h1>Comments</h1>
-                <CommentList />
+                <CommentList data={this.state.data} />
                 <CommentForm />
             </div>
         );
@@ -12,10 +43,17 @@ let CommentBox = React.createClass({
 
 let CommentList = React.createClass({
     render(){
+        let commentNodes = this.props.data.map((comment) => {
+            return (
+                <Comment author={comment.author} key={comment.id} >
+                    {comment.text}
+                </Comment>
+            );
+        });
+
         return (
             <div className="commentList">
-                <Comment author="Pete Hunt">This is the first comment </Comment>
-                <Comment author="Pete Hunt">This is the second comment </Comment>
+                {commentNodes}
             </div>
         );
     }
@@ -51,6 +89,6 @@ let Comment = React.createClass({
 });
 
 ReactDOM.render(
-    <CommentBox />,
+    <CommentBox url="/api/comments" pollInterval={2000} />,
     document.querySelector('#content')
 );
